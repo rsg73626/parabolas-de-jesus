@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "source": "API.Bible",
+    "endpoint": "https://rest.api.bible/v1",
+    "extracted_at_utc": "2026-03-10T04:29:53Z",
+    "parable": "A casa sobre a rocha e sobre a areia",
+    "gospels": [
+      "matthew",
+      "luke"
+    ],
+    "retrieved_from_api_utc": "2026-03-10T04:29:53Z",
+    "retrieved_from_api_date": "2026-03-10"
+  },
+  "languages": {
+    "en": {
+      "label": "English",
+      "version": "New International Version 2011",
+      "popular_title": "The House on the Rock and on the Sand",
+      "gospels": {
+        "matthew": {
+          "passage_id": "MAT.7.24-MAT.7.27",
+          "reference": "Matt. 7:24-27",
+          "title": "The Wise and Foolish Builders",
+          "text": "[24] “Therefore everyone who hears these words of mine and puts them into practice is like a wise man who built his house on the rock.  [25] The rain came down, the streams rose, and the winds blew and beat against that house; yet it did not fall, because it had its foundation on the rock.  [26] But everyone who hears these words of mine and does not put them into practice is like a foolish man who built his house on sand.  [27] The rain came down, the streams rose, and the winds blew and beat against that house, and it fell with a great crash.”",
+          "copyright": "The Holy Bible, New International Version® NIV® Copyright © 1973, 1978, 1984, 2011 by Biblica, Inc.® Used by Permission of Biblica, Inc.® All rights reserved worldwide."
+        },
+        "luke": {
+          "passage_id": "LUK.6.47-LUK.6.49",
+          "reference": "Luke 6:47-49",
+          "title": "The House on the Rock and on the Sand",
+          "text": "[47] As for everyone who comes to me and hears my words and puts them into practice, I will show you what they are like.  [48] They are like a man building a house, who dug down deep and laid the foundation on rock. When a flood came, the torrent struck that house but could not shake it, because it was well built.  [49] But the one who hears my words and does not put them into practice is like a man who built a house on the ground without a foundation. The moment the torrent struck that house, it collapsed and its destruction was complete.”",
+          "copyright": "The Holy Bible, New International Version® NIV® Copyright © 1973, 1978, 1984, 2011 by Biblica, Inc.® Used by Permission of Biblica, Inc.® All rights reserved worldwide."
+        }
+      }
+    },
+    "pt-BR": {
+      "label": "Português (Brasil)",
+      "version": "Biblia Livre Para Todos",
+      "popular_title": "A casa sobre a rocha e sobre a areia",
+      "gospels": {
+        "matthew": {
+          "passage_id": "MAT.7.24-MAT.7.27",
+          "reference": "Mateus 7:24-27",
+          "title": "A casa sobre a rocha e sobre a areia",
+          "text": "[24] Todos os que ouvem as palavras que eu digo e que as seguem são como um homem sábio, que construiu sua casa na rocha.  [25] A chuva caiu, vieram as enchentes e o vento soprou forte contra a casa, mas ela não caiu, porque a sua base foi construída na rocha.  [26] Todos os que ouvem as palavras que eu digo e não as seguem são como um homem tolo, que construiu sua casa na areia.  [27] A chuva caiu, vieram as enchentes e o vento soprou forte contra a casa; ela desabou e ficou totalmente destruída.”",
+          "copyright": "Dr. Jonathan Gallagher. Lançado sob licença Creative Commons Atribuição-CompartilhaIgual 4.0 Não Adaptada. Para correções envie email para jonathangallagherfbv@gmail.com Dr. Jonathan Gallagher. Released under Creative Commons Attribution-ShareAlike 4.0 Unported License. For corrections send email to jonathangallagherfbv@gmail.com"
+        },
+        "luke": {
+          "passage_id": "LUK.6.47-LUK.6.49",
+          "reference": "Lucas 6:47-49",
+          "title": "A casa sobre a rocha e sobre a areia",
+          "text": "[47] Eu darei a vocês um exemplo de alguém que vem até mim, ouve as minhas orientações e as segue.  [48] Essa pessoa é como um homem que constrói uma casa. Ele cava bem fundo e coloca o alicerce em uma rocha sólida. Quando o rio transborda e a enchente alcança a casa, ela não se danifica, porque foi muito bem construída.  [49] A pessoa que me ouve, mas não faz o que eu digo, é como um homem que constrói a sua casa sem o alicerce. Quando a enchente alcança a casa, ela cai imediatamente e fica destruída por completo.”",
+          "copyright": "Dr. Jonathan Gallagher. Lançado sob licença Creative Commons Atribuição-CompartilhaIgual 4.0 Não Adaptada. Para correções envie email para jonathangallagherfbv@gmail.com Dr. Jonathan Gallagher. Released under Creative Commons Attribution-ShareAlike 4.0 Unported License. For corrections send email to jonathangallagherfbv@gmail.com"
+        }
+      }
+    },
+    "pt-PT": {
+      "label": "Português (Portugal)",
+      "version": "Translation for Translators in Brasilian Portuguese",
+      "note": "API.Bible não retornou versão explicitamente PT-PT para esta chave; usada alternativa em português disponível.",
+      "popular_title": "A casa sobre a rocha e sobre a areia",
+      "gospels": {
+        "matthew": {
+          "passage_id": "MAT.7.24-MAT.7.27",
+          "reference": "Mateus 7:24-27",
+          "title": "Mateus 7.24–27",
+          "text": "TEMA: Jesus adverte que coisas ruins acontecerão àqueles que não obedecem ao ensinamento dele depois de terem ouvido.\n[24] Portanto, qualquer pessoa que ouvir o que eu digo e fizer o que mando, será como homem sábio que constrói a casa dele na rocha.  [25] Então, mesmo que as chuvas caiam, o rio suba e o vento sopre e bata contra a casa, ela não cairá, porque foi construída {ele a construiu} em um alicerce firme de rocha.  [26] Por outro lado, aquele que ouvir o que digo e não me obedecer será como um homem tolo que constrói a casa dele na areia.  [27] Aí quando a chuva cair, o rio subir, o vento soprar e bater na casa, ela cairá e será completamente destruída, porque o homem a construiu na areia. Portanto, obedeçam ao que eu ensino a vocês”.",
+          "copyright": "Copyright © 2018 Ellis W. Deibler, Jr. Released under a CC-BY-SA 4.0 license."
+        },
+        "luke": {
+          "passage_id": "LUK.6.47-LUK.6.49",
+          "reference": "Lucas 6:47-49",
+          "title": "A casa sobre a rocha e sobre a areia",
+          "text": "[47] Vou lhes dizer como são todos os que vêm a mim e ouvem as minhas mensagens e as obedecem.  [48] São como um homem que cavou bem fundo na terra para preparar para construir a sua casa. Ele cuidou de pôr os alicerces na rocha/terra firme. Aí quando houve um enchente, a água tentou acabar com os alicerces. Mas o rio não pôde sacudir a casa, porque foi construída sobre alicerces firmes.  [49] Porém qualquer um que ouve as minhas mensagens mas não as obedece, é como um homem que construiu a sua casa em cima da terra sem cavar para pôr os alicerces. Quando o rio transbordou, a casa logo desabou e estava totalmente estragada.",
+          "copyright": "Copyright © 2018 Ellis W. Deibler, Jr. Released under a CC-BY-SA 4.0 license."
+        }
+      }
+    },
+    "es": {
+      "label": "Español",
+      "version": "Reina Valera 1909",
+      "popular_title": "La casa sobre la roca y sobre la arena",
+      "gospels": {
+        "matthew": {
+          "passage_id": "MAT.7.24-MAT.7.27",
+          "reference": "San Mateo 7:24-27",
+          "title": "La casa sobre la roca y sobre la arena",
+          "text": "[24] Cualquiera, pues, que me oye estas palabras, y las hace, le compararé á un hombre prudente, que edificó su casa sobre la peña;\n     [25] Y descendió lluvia, y vinieron ríos, y soplaron vientos, y combatieron aquella casa; y no cayó: porque estaba fundada sobre la peña.\n     [26] Y cualquiera que me oye estas palabras, y no las hace, le compararé á un hombre insensato, que edificó su casa sobre la arena;\n     [27] Y descendió lluvia, y vinieron ríos, y soplaron vientos, é hicieron ímpetu en aquella casa; y cayó, y fué grande su ruina.",
+          "copyright": "Reina-Valera 1909 - Dominio público. Fue realizada por Sociedades Bíblicas Unidas y publicada por primera vez en 1909."
+        },
+        "luke": {
+          "passage_id": "LUK.6.47-LUK.6.49",
+          "reference": "San Lucas 6:47-49",
+          "title": "La casa sobre la roca y sobre la arena",
+          "text": "[47] Todo aquel que viene á mí, y oye mis palabras, y las hace, os enseñaré á quién es semejante:\n     [48] Semejante es al hombre que edifica una casa, el cual cavó y ahondó, y puso el fundamento sobre la peña; y cuando vino una avenida, el río dió con ímpetu en aquella casa, mas no la pudo menear: porque estaba fundada sobre la peña.\n     [49] Mas el que oyó y no hizo, semejante es al hombre que edificó su casa sobre tierra, sin fundamento; en la cual el río dió con ímpetu, y luego cayó; y fué grande la ruina de aquella casa.",
+          "copyright": "Reina-Valera 1909 - Dominio público. Fue realizada por Sociedades Bíblicas Unidas y publicada por primera vez en 1909."
+        }
+      }
+    }
+  }
+}

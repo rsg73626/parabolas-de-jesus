@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Type Lab (Offline)</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main class="layout">
+    <section class="panel">
+      <h1>Gold Type Lab</h1>
+      <p class="subtitle">Lab offline para iterar o texto dourado sem CDN.</p>
+
+      <label class="field">
+        <span>Texto</span>
+        <input id="textInput" type="text" value="A" />
+      </label>
+
+      <div class="controls">
+        <label class="field compact">
+          <span>Tamanho</span>
+          <input id="sizeInput" type="range" min="72" max="180" step="1" value="118" />
+        </label>
+        <label class="field compact">
+          <span>Extrusão</span>
+          <input id="depthInput" type="range" min="1" max="16" step="1" value="7" />
+        </label>
+        <label class="field compact">
+          <span>Brilho</span>
+          <input id="shineInput" type="range" min="0" max="100" step="1" value="72" />
+        </label>
+        <label class="field compact">
+          <span>Sombra</span>
+          <input id="shadowInput" type="range" min="0" max="100" step="1" value="44" />
+        </label>
+        <label class="field compact">
+          <span>Detalhe (menor = mais liso, mais pesado)</span>
+          <input id="detailInput" type="range" min="3" max="10" step="1" value="6" />
+        </label>
+      </div>
+
+      <div class="buttons">
+        <button id="applyTextBtn" type="button">Aplicar Texto</button>
+        <button id="resetBtn" type="button">Reset Visual</button>
+      </div>
+
+      <p class="hint">Render 3D real sem CDN: objeto extrudado, iluminação e câmera no canvas.</p>
+    </section>
+
+    <section class="viewer-wrap">
+      <canvas id="viewer" class="viewer" aria-label="Preview do título dourado 3D"></canvas>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
