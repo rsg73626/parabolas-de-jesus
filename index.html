@@ -13,7 +13,32 @@
   <main class="page" id="topo">
     <header class="header">
       <h1 id="pageTitle">Parábolas de Jesus</h1>
+      <button
+        type="button"
+        id="mobile-language-trigger"
+        class="mobile-lang-trigger"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="mobile-language-dialog"
+      >
+        <span id="mobile-language-flag" class="lang-flag">🇧🇷</span>
+      </button>
     </header>
+
+    <section class="search-bar" id="searchBarSection">
+      <label class="search-label" for="parableSearchInput">
+        <span class="visually-hidden" id="parableSearchLabel">Buscar parábolas</span>
+      </label>
+      <input
+        type="search"
+        id="parableSearchInput"
+        class="search-input"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Buscar parábolas"
+        aria-labelledby="parableSearchLabel"
+      />
+    </section>
 
     <section class="global-controls" id="globalControls" aria-label="Configuração global de idioma e evangelho">
       <div class="lang-picker" id="langPicker">
@@ -25,6 +50,15 @@
         <div id="global-language-menu" class="lang-menu" role="listbox" aria-label="Idioma"></div>
       </div>
     </section>
+
+    <div id="mobile-language-dialog" class="mobile-lang-dialog" aria-hidden="true">
+      <div id="mobile-language-backdrop" class="mobile-lang-backdrop"></div>
+      <div class="mobile-lang-panel" role="dialog" aria-modal="true" aria-labelledby="mobile-language-dialog-title">
+        <h2 id="mobile-language-dialog-title" class="mobile-lang-title">Idioma</h2>
+        <button type="button" id="mobile-language-close" class="mobile-lang-close" aria-label="Fechar">×</button>
+        <div id="mobile-language-menu" class="mobile-lang-menu" role="listbox" aria-label="Idioma"></div>
+      </div>
+    </div>
 
     <nav class="index" id="indexNav" aria-label="Índice das parábolas">
       <ul id="indexList"></ul>

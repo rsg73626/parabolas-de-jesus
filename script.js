@@ -72,15 +72,25 @@ const globalLanguageTrigger = document.querySelector("#global-language-trigger")
 const globalLanguageMenu = document.querySelector("#global-language-menu");
 const globalLanguageFlag = document.querySelector("#global-language-flag");
 const globalLanguageLabel = document.querySelector("#global-language-label");
+const mobileLanguageTrigger = document.querySelector("#mobile-language-trigger");
+const mobileLanguageFlag = document.querySelector("#mobile-language-flag");
+const mobileLanguageDialog = document.querySelector("#mobile-language-dialog");
+const mobileLanguageBackdrop = document.querySelector("#mobile-language-backdrop");
+const mobileLanguageClose = document.querySelector("#mobile-language-close");
+const mobileLanguageMenu = document.querySelector("#mobile-language-menu");
+const mobileLanguageDialogTitle = document.querySelector("#mobile-language-dialog-title");
 const pageTitle = document.querySelector("#pageTitle");
 const globalControls = document.querySelector("#globalControls");
 const indexSection = document.querySelector(".index");
 const indexNav = document.querySelector("#indexNav");
+const searchBarSection = document.querySelector("#searchBarSection");
+const parableSearchInput = document.querySelector("#parableSearchInput");
 const gospelSelectionByParable = {};
 const showVerseMarkersByParable = {};
 let currentLanguageCode = "pt-BR";
 let currentParableId = null;
 let currentView = "index";
+let searchQuery = "";
 const COMPARE_ALL_KEY = "__compare_all__";
 const activeTrackByParable = {};
 const LANGUAGE_SELF_LABELS = {
@@ -96,6 +106,12 @@ const UI_STRINGS = {
     globalControlsAria: "Configuração global de idioma e evangelho",
     indexAria: "Lista de parábolas",
     parablesAria: "Conteúdo da parábola",
+    searchPlaceholder: "Buscar por título ou conteúdo",
+    searchAria: "Buscar parábolas",
+    noSearchResults: "Nenhuma parábola encontrada para esta busca.",
+    mobileLanguageLabel: "Selecionar idioma",
+    languageDialogTitle: "Idioma",
+    close: "Fechar",
     prev: "Anterior",
     next: "Próxima",
     home: "Início",
@@ -110,6 +126,12 @@ const UI_STRINGS = {
     globalControlsAria: "Configuração global de idioma e evangelho",
     indexAria: "Lista de parábolas",
     parablesAria: "Conteúdo da parábola",
+    searchPlaceholder: "Pesquisar por título ou conteúdo",
+    searchAria: "Pesquisar parábolas",
+    noSearchResults: "Nenhuma parábola encontrada para esta pesquisa.",
+    mobileLanguageLabel: "Selecionar idioma",
+    languageDialogTitle: "Idioma",
+    close: "Fechar",
     prev: "Anterior",
     next: "Seguinte",
     home: "Início",
@@ -124,6 +146,12 @@ const UI_STRINGS = {
     globalControlsAria: "Global language and gospel settings",
     indexAria: "Parables list",
     parablesAria: "Parable content",
+    searchPlaceholder: "Search by title or content",
+    searchAria: "Search parables",
+    noSearchResults: "No parables found for this search.",
+    mobileLanguageLabel: "Choose language",
+    languageDialogTitle: "Language",
+    close: "Close",
     prev: "Previous",
     next: "Next",
     home: "Home",
@@ -138,6 +166,12 @@ const UI_STRINGS = {
     globalControlsAria: "Configuración global de idioma y evangelio",
     indexAria: "Lista de parábolas",
     parablesAria: "Contenido de la parábola",
+    searchPlaceholder: "Buscar por título o contenido",
+    searchAria: "Buscar parábolas",
+    noSearchResults: "No se encontraron parábolas para esta búsqueda.",
+    mobileLanguageLabel: "Seleccionar idioma",
+    languageDialogTitle: "Idioma",
+    close: "Cerrar",
     prev: "Anterior",
     next: "Siguiente",
     home: "Inicio",
@@ -451,6 +485,14 @@ function applyStaticTranslations() {
   if (globalLanguageMenu) globalLanguageMenu.setAttribute("aria-label", strings.languageMenuAria);
   if (indexNav) indexNav.setAttribute("aria-label", strings.indexAria);
   if (parablesContainer) parablesContainer.setAttribute("aria-label", strings.parablesAria);
+  if (parableSearchInput) {
+    parableSearchInput.placeholder = strings.searchPlaceholder;
+    parableSearchInput.setAttribute("aria-label", strings.searchAria);
+  }
+  if (mobileLanguageTrigger) mobileLanguageTrigger.setAttribute("aria-label", strings.mobileLanguageLabel);
+  if (mobileLanguageDialogTitle) mobileLanguageDialogTitle.textContent = strings.languageDialogTitle;
+  if (mobileLanguageClose) mobileLanguageClose.setAttribute("aria-label", strings.close);
+  if (mobileLanguageMenu) mobileLanguageMenu.setAttribute("aria-label", strings.languageMenuAria);
 }
 
 function getLanguageSelfLabel(code) {
@@ -480,9 +522,75 @@ function getParableDisplayTitle(parableId) {
   return pickDisplayTitle(gospelData, apiParable, getStaticFallbackTitle(parableId));
 }
 
+function getParableReferenceLine(parableId) {
+  const apiParable = getApiParable(parableId);
+  const refs = apiParable?.gospels
+    ? Object.values(apiParable.gospels)
+      .map((gospel) => (gospel.reference || "").trim())
+      .filter(Boolean)
+    : [];
+
+  if (refs.length) return refs.join(" | ");
+
+  const staticParable = PARABLES.find((item) => item.id === parableId);
+  return (staticParable?.location || "").replace(/;\s*/g, " | ");
+}
+
+function normalizeSearchText(value) {
+  return (value || "")
+    .toLocaleLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getParableSearchCorpus(parableId) {
+  const apiParable = getApiParable(parableId);
+  if (!apiParable?.gospels) return "";
+  return Object.values(apiParable.gospels)
+    .map((gospel) => `${gospel.reference || ""}\n${gospel.title || ""}\n${gospel.text || ""}`)
+    .join("\n");
+}
+
+function getFilteredParables() {
+  const query = normalizeSearchText(searchQuery);
+  if (!query) return PARABLES_BY_GOSPEL_LOCATION;
+
+  const titleMatches = [];
+  const contentMatches = [];
+
+  PARABLES_BY_GOSPEL_LOCATION.forEach((parable) => {
+    const titleText = normalizeSearchText(getParableDisplayTitle(parable.id));
+    if (titleText.includes(query)) {
+      titleMatches.push(parable);
+      return;
+    }
+
+    const contentText = normalizeSearchText(getParableSearchCorpus(parable.id));
+    if (contentText.includes(query)) {
+      contentMatches.push(parable);
+    }
+  });
+
+  return [...titleMatches, ...contentMatches];
+}
+
 function renderIndex() {
-  indexList.innerHTML = PARABLES_BY_GOSPEL_LOCATION.map((parable) => `
-    <li><a href="#" class="${parable.id === currentParableId ? "is-active" : ""}" data-parable-id="${parable.id}">${getParableDisplayTitle(parable.id)}</a></li>
+  const visibleParables = getFilteredParables();
+
+  if (!visibleParables.length) {
+    indexList.innerHTML = `<li class="index-empty">${t("noSearchResults")}</li>`;
+    return;
+  }
+
+  indexList.innerHTML = visibleParables.map((parable) => `
+    <li>
+      <a href="#" class="${parable.id === currentParableId ? "is-active" : ""}" data-parable-id="${parable.id}">
+        <span class="index-card-title">${getParableDisplayTitle(parable.id)}</span>
+        <span class="index-card-ref">${getParableReferenceLine(parable.id)}</span>
+      </a>
+    </li>
   `).join("");
 
   indexList.querySelectorAll("a[data-parable-id]").forEach((link) => {
@@ -559,12 +667,14 @@ function renderApp() {
   if (currentView === "index") {
     if (pageRoot) pageRoot.classList.add("is-index-view");
     if (indexSection) indexSection.classList.remove("is-hidden");
+    if (searchBarSection) searchBarSection.classList.remove("is-hidden");
     parablesContainer.innerHTML = "";
     writeStateToUrl();
     return;
   }
   if (pageRoot) pageRoot.classList.remove("is-index-view");
   if (indexSection) indexSection.classList.add("is-hidden");
+  if (searchBarSection) searchBarSection.classList.add("is-hidden");
   renderCurrentParable();
   writeStateToUrl();
 }
@@ -731,24 +841,52 @@ function initGlobalVersionUI() {
     return;
   }
 
+  const closeMobileLanguageDialog = () => {
+    if (!mobileLanguageDialog) return;
+    mobileLanguageDialog.classList.remove("is-open");
+    mobileLanguageDialog.setAttribute("aria-hidden", "true");
+    if (mobileLanguageTrigger) mobileLanguageTrigger.setAttribute("aria-expanded", "false");
+  };
+
+  const openMobileLanguageDialog = () => {
+    if (!mobileLanguageDialog) return;
+    mobileLanguageDialog.classList.add("is-open");
+    mobileLanguageDialog.setAttribute("aria-hidden", "false");
+    if (mobileLanguageTrigger) mobileLanguageTrigger.setAttribute("aria-expanded", "true");
+  };
+
   const renderLanguageMenu = () => {
     if (!PARABLES_API_DATA) {
       globalLanguageMenu.innerHTML = "";
+      if (mobileLanguageMenu) mobileLanguageMenu.innerHTML = "";
       return;
     }
     const languages = Object.keys(PARABLES_API_DATA.languages)
       .sort((a, b) => getLanguageSelfLabel(a).localeCompare(getLanguageSelfLabel(b), undefined, { sensitivity: "base" }));
-    globalLanguageMenu.innerHTML = languages
+    const optionsMarkup = languages
       .map((code) => `<button type="button" class="lang-option" role="option" data-lang="${code}" aria-selected="false"><span class="lang-flag">${getLanguageFlag(code)}</span><span>${getLanguageSelfLabel(code)}</span></button>`)
       .join("");
+    globalLanguageMenu.innerHTML = optionsMarkup;
+    if (mobileLanguageMenu) mobileLanguageMenu.innerHTML = optionsMarkup;
 
     globalLanguageMenu.querySelectorAll(".lang-option").forEach((button) => {
       button.addEventListener("click", () => {
         setLanguage(button.dataset.lang);
         langPicker.classList.remove("is-open");
         globalLanguageTrigger.setAttribute("aria-expanded", "false");
+        closeMobileLanguageDialog();
       });
     });
+    if (mobileLanguageMenu) {
+      mobileLanguageMenu.querySelectorAll(".lang-option").forEach((button) => {
+        button.addEventListener("click", () => {
+          setLanguage(button.dataset.lang);
+          langPicker.classList.remove("is-open");
+          globalLanguageTrigger.setAttribute("aria-expanded", "false");
+          closeMobileLanguageDialog();
+        });
+      });
+    }
   };
 
   const setLanguage = (code) => {
@@ -758,11 +896,19 @@ function initGlobalVersionUI() {
     const label = PARABLES_API_DATA ? getLanguageSelfLabel(code) : "Português (Brasil)";
     globalLanguageFlag.textContent = getLanguageFlag(code);
     globalLanguageLabel.textContent = label;
+    if (mobileLanguageFlag) mobileLanguageFlag.textContent = getLanguageFlag(code);
     globalLanguageMenu.querySelectorAll(".lang-option").forEach((button) => {
       const isSelected = button.dataset.lang === code;
       button.classList.toggle("is-active", isSelected);
       button.setAttribute("aria-selected", isSelected ? "true" : "false");
     });
+    if (mobileLanguageMenu) {
+      mobileLanguageMenu.querySelectorAll(".lang-option").forEach((button) => {
+        const isSelected = button.dataset.lang === code;
+        button.classList.toggle("is-active", isSelected);
+        button.setAttribute("aria-selected", isSelected ? "true" : "false");
+      });
+    }
     renderApp();
   };
 
@@ -778,6 +924,22 @@ function initGlobalVersionUI() {
       globalLanguageTrigger.setAttribute("aria-expanded", "false");
     }
   });
+  if (mobileLanguageTrigger) {
+    mobileLanguageTrigger.addEventListener("click", () => {
+      const isOpen = mobileLanguageDialog?.classList.contains("is-open");
+      if (isOpen) closeMobileLanguageDialog();
+      else openMobileLanguageDialog();
+    });
+  }
+  if (mobileLanguageClose) {
+    mobileLanguageClose.addEventListener("click", closeMobileLanguageDialog);
+  }
+  if (mobileLanguageBackdrop) {
+    mobileLanguageBackdrop.addEventListener("click", closeMobileLanguageDialog);
+  }
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMobileLanguageDialog();
+  });
 
   const initialState = readStateFromUrl();
   currentView = initialState.view;
@@ -788,6 +950,12 @@ function initGlobalVersionUI() {
 }
 
 initGlobalVersionUI();
+if (parableSearchInput) {
+  parableSearchInput.addEventListener("input", () => {
+    searchQuery = parableSearchInput.value || "";
+    if (currentView === "index") renderIndex();
+  });
+}
 window.addEventListener("popstate", () => {
   const state = readStateFromUrl();
   currentView = state.view;
