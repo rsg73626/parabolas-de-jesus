@@ -63,6 +63,59 @@ const PARABLES = [
   { id: 38, title: "A figueira que seca", lesson: "Aparência sem fruto não tem valor.", location: "Mateus 21:18-22; Marcos 11:12-14" }
 ];
 
+const RELATED_CONTENT_BY_PARABLE = {
+  21: [
+    {
+      type: "video",
+      title: {
+        "pt-BR": "Jesus declara a parábola da ovelha perdida",
+        "pt-PT": "Jesus declara a parábola da ovelha perdida",
+        en: "Jesus declares the parable of the lost sheep",
+        es: "Jesús declara la parábola de la oveja perdida"
+      },
+      description: {
+        "pt-BR": "Vídeo complementar sobre a parábola da ovelha perdida.",
+        "pt-PT": "Vídeo complementar sobre a parábola da ovelha perdida.",
+        en: "Supplemental video about the parable of the lost sheep.",
+        es: "Video complementario sobre la parábola de la oveja perdida."
+      },
+      url: "https://www.churchofjesuschrist.org/media/video/2011-10-0063-jesus-declares-the-parable-of-the-lost-sheep?lang=por&authuser=1",
+      source: {
+        "pt-BR": "Church of Jesus Christ",
+        "pt-PT": "Church of Jesus Christ",
+        en: "Church of Jesus Christ",
+        es: "Church of Jesus Christ"
+      },
+      language: "pt-BR"
+    }
+  ],
+  23: [
+    {
+      type: "video",
+      title: {
+        "pt-BR": "O Filho Pródigo",
+        "pt-PT": "O Filho Pródigo",
+        en: "The Prodigal Son",
+        es: "El hijo pródigo"
+      },
+      description: {
+        "pt-BR": "Vídeo complementar sobre a parábola do filho pródigo.",
+        "pt-PT": "Vídeo complementar sobre a parábola do filho pródigo.",
+        en: "Supplemental video about the parable of the prodigal son.",
+        es: "Video complementario sobre la parábola del hijo pródigo."
+      },
+      url: "https://www.youtube.com/watch?v=PP8XWqggmXw",
+      source: {
+        "pt-BR": "YouTube",
+        "pt-PT": "YouTube",
+        en: "YouTube",
+        es: "YouTube"
+      },
+      language: "pt-BR"
+    }
+  ]
+};
+
 const indexList = document.querySelector("#indexList");
 const parablesContainer = document.querySelector("#parablesContainer");
 const pageRoot = document.querySelector(".page");
@@ -118,7 +171,15 @@ const UI_STRINGS = {
     compareAll: "Comparar todos",
     showVerses: "mostrar versículos",
     noParableContent: "Conteúdo indisponível para esta parábola no idioma selecionado.",
-    noPassageContent: "Sem conteúdo disponível."
+    noPassageContent: "Sem conteúdo disponível.",
+    relatedContentTitle: "Conteúdos adicionais relacionados",
+    relatedContentOpen: "Abrir conteúdo",
+    relatedContentLanguageLabel: "Idioma",
+    relatedContentTypeLink: "Link externo",
+    relatedContentTypeVideo: "Vídeo",
+    relatedContentTypeArticle: "Artigo",
+    relatedContentTypePodcast: "Áudio",
+    relatedContentTypeStudy: "Estudo"
   },
   "pt-PT": {
     appTitle: "Parábolas de Jesus",
@@ -138,7 +199,15 @@ const UI_STRINGS = {
     compareAll: "Comparar todos",
     showVerses: "mostrar versículos",
     noParableContent: "Conteúdo indisponível para esta parábola no idioma selecionado.",
-    noPassageContent: "Sem conteúdo disponível."
+    noPassageContent: "Sem conteúdo disponível.",
+    relatedContentTitle: "Conteúdos adicionais relacionados",
+    relatedContentOpen: "Abrir conteúdo",
+    relatedContentLanguageLabel: "Idioma",
+    relatedContentTypeLink: "Ligação externa",
+    relatedContentTypeVideo: "Vídeo",
+    relatedContentTypeArticle: "Artigo",
+    relatedContentTypePodcast: "Áudio",
+    relatedContentTypeStudy: "Estudo"
   },
   en: {
     appTitle: "Parables of Jesus",
@@ -158,7 +227,15 @@ const UI_STRINGS = {
     compareAll: "Compare all",
     showVerses: "show verses",
     noParableContent: "Content unavailable for this parable in the selected language.",
-    noPassageContent: "No content available."
+    noPassageContent: "No content available.",
+    relatedContentTitle: "Related additional content",
+    relatedContentOpen: "Open content",
+    relatedContentLanguageLabel: "Language",
+    relatedContentTypeLink: "External link",
+    relatedContentTypeVideo: "Video",
+    relatedContentTypeArticle: "Article",
+    relatedContentTypePodcast: "Audio",
+    relatedContentTypeStudy: "Study"
   },
   es: {
     appTitle: "Parábolas de Jesús",
@@ -178,7 +255,15 @@ const UI_STRINGS = {
     compareAll: "Comparar todos",
     showVerses: "mostrar versículos",
     noParableContent: "Contenido no disponible para esta parábola en el idioma seleccionado.",
-    noPassageContent: "Sin contenido disponible."
+    noPassageContent: "Sin contenido disponible.",
+    relatedContentTitle: "Contenidos adicionales relacionados",
+    relatedContentOpen: "Abrir contenido",
+    relatedContentLanguageLabel: "Idioma",
+    relatedContentTypeLink: "Enlace externo",
+    relatedContentTypeVideo: "Vídeo",
+    relatedContentTypeArticle: "Artículo",
+    relatedContentTypePodcast: "Audio",
+    relatedContentTypeStudy: "Estudio"
   }
 };
 const PARABLE_TRACKING = {
@@ -408,6 +493,147 @@ function t(key) {
   return strings[key] || key;
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getLanguageDisplayName(code) {
+  if (!code) return "";
+  if (LANGUAGE_SELF_LABELS[code]) return LANGUAGE_SELF_LABELS[code];
+  const parts = code.split("-");
+  try {
+    return new Intl.DisplayNames([currentLanguageCode, "pt-BR", "en"], { type: "language" }).of(parts[0]) || code;
+  } catch (_error) {
+    return code;
+  }
+}
+
+function getRelatedContentItems(parableId) {
+  const items = RELATED_CONTENT_BY_PARABLE[parableId];
+  return Array.isArray(items) ? items.filter((item) => item?.url && item?.title) : [];
+}
+
+function getLocalizedContentValue(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value !== "object") return "";
+  return (
+    value[currentLanguageCode] ||
+    value["pt-BR"] ||
+    value["pt-PT"] ||
+    value.en ||
+    value.es ||
+    Object.values(value).find((entry) => typeof entry === "string") ||
+    ""
+  );
+}
+
+function getContentLanguageDisclaimer(languageCode) {
+  const languageName = getLanguageDisplayName(languageCode);
+  const templates = {
+    "pt-BR": `Este item está em ${languageName}. O conteúdo complementar do site prioriza Português (Brasil); verifique se a plataforma oferece tradução automática.`,
+    "pt-PT": `Este item está em ${languageName}. O conteúdo complementar do site privilegia Português (Brasil); verifique se a plataforma oferece tradução automática.`,
+    en: `This item is in ${languageName}. Supplemental content on this site primarily targets Brazilian Portuguese; check whether the platform offers automatic translation.`,
+    es: `Este elemento está en ${languageName}. El contenido complementario del sitio prioriza el portugués de Brasil; verifica si la plataforma ofrece traducción automática.`
+  };
+  return templates[currentLanguageCode] || templates["pt-BR"];
+}
+
+function getRelatedContentTypeLabel(type) {
+  if (type === "video") return t("relatedContentTypeVideo");
+  if (type === "article") return t("relatedContentTypeArticle");
+  if (type === "podcast") return t("relatedContentTypePodcast");
+  if (type === "study") return t("relatedContentTypeStudy");
+  return t("relatedContentTypeLink");
+}
+
+function parseYouTubeVideoId(url) {
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.hostname.includes("youtu.be")) {
+      return parsedUrl.pathname.replace(/\//g, "").trim() || null;
+    }
+    if (parsedUrl.hostname.includes("youtube.com")) {
+      return parsedUrl.searchParams.get("v") || null;
+    }
+  } catch (_error) {
+    return null;
+  }
+  return null;
+}
+
+function getHostnameLabel(url) {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, "");
+    return hostname;
+  } catch (_error) {
+    return "";
+  }
+}
+
+function resolveRelatedContentImage(item) {
+  if (item.image) return item.image;
+  const youtubeId = parseYouTubeVideoId(item.url);
+  if (youtubeId) return `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
+  return "";
+}
+
+function renderRelatedContentSection(parableId) {
+  const items = getRelatedContentItems(parableId);
+  if (!items.length) return "";
+
+  return `
+    <section class="related-content" aria-label="${escapeHtml(t("relatedContentTitle"))}">
+      <div class="related-content-header">
+        <h3 class="related-content-title">${escapeHtml(t("relatedContentTitle"))}</h3>
+      </div>
+      <div class="related-content-grid">
+        ${items.map((item) => {
+          const image = resolveRelatedContentImage(item);
+          const typeClass = `is-${escapeHtml(item.type || "link")}`;
+          const language = item.language || "pt-BR";
+          const languageName = getLanguageDisplayName(language);
+          const showLanguageDisclaimer = language !== "pt-BR";
+          const title = getLocalizedContentValue(item.title);
+          const description = getLocalizedContentValue(item.description);
+          const sourceLabel = getLocalizedContentValue(item.source) || getHostnameLabel(item.url);
+          const ctaLabel = getLocalizedContentValue(item.ctaLabel) || t("relatedContentOpen");
+          return `
+            <a
+              class="related-card ${typeClass}"
+              href="${escapeHtml(item.url)}"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              <div class="related-card-media ${image ? "has-image" : "is-fallback"}">
+                ${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" />` : `<span class="related-card-fallback-label">${escapeHtml(sourceLabel || getRelatedContentTypeLabel(item.type))}</span>`}
+                <div class="related-card-overlay">
+                  <span class="related-card-kind">${escapeHtml(getRelatedContentTypeLabel(item.type))}</span>
+                  ${sourceLabel ? `<span class="related-card-source">${escapeHtml(sourceLabel)}</span>` : ""}
+                </div>
+              </div>
+              <div class="related-card-body">
+                <h4 class="related-card-title">${escapeHtml(title)}</h4>
+                ${description ? `<p class="related-card-description">${escapeHtml(description)}</p>` : ""}
+                <div class="related-card-meta">
+                  <span class="related-card-language">${escapeHtml(t("relatedContentLanguageLabel"))}: ${escapeHtml(languageName)}</span>
+                  <span class="related-card-cta">${escapeHtml(ctaLabel)}</span>
+                </div>
+                ${showLanguageDisclaimer ? `<p class="related-card-disclaimer">${escapeHtml(getContentLanguageDisclaimer(language))}</p>` : ""}
+              </div>
+            </a>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
+
 function getParableTracking(parableId) {
   const byParable = PARABLE_TRACKING[parableId];
   if (!byParable) return null;
@@ -622,6 +848,7 @@ function renderCurrentParable() {
     <article class="parable" id="parabola-${parable.id}">
       <h2>${titleMarkup}</h2>
       ${apiParable ? `<div class="gospel-controls"><div id="parable-${parable.id}-gospel-nav" class="gospel-nav"></div><div id="parable-${parable.id}-verse-toggle" class="verse-toggle"></div></div><div id="parable-${parable.id}-passage" class="passage-content"></div>` : `<p>${t("noParableContent")}</p>`}
+      ${renderRelatedContentSection(parable.id)}
       <div class="parable-footer-nav">
         <button type="button" class="nav-btn" id="prevParableBtn" ${isFirst ? "disabled" : ""}>${t("prev")}</button>
         <button type="button" class="nav-btn nav-btn-index" id="backToIndexBtn">${t("home")}</button>
