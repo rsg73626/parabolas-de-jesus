@@ -125,6 +125,9 @@ const globalLanguageTrigger = document.querySelector("#global-language-trigger")
 const globalLanguageMenu = document.querySelector("#global-language-menu");
 const globalLanguageFlag = document.querySelector("#global-language-flag");
 const globalLanguageLabel = document.querySelector("#global-language-label");
+const shareParableTrigger = document.querySelector("#share-parable-trigger");
+const sharePicker = document.querySelector("#sharePicker");
+const shareParableMenu = document.querySelector("#share-parable-menu");
 const mobileLanguageTrigger = document.querySelector("#mobile-language-trigger");
 const mobileLanguageFlag = document.querySelector("#mobile-language-flag");
 const mobileLanguageDialog = document.querySelector("#mobile-language-dialog");
@@ -138,6 +141,8 @@ const indexSection = document.querySelector(".index");
 const indexNav = document.querySelector("#indexNav");
 const searchBarSection = document.querySelector("#searchBarSection");
 const parableSearchInput = document.querySelector("#parableSearchInput");
+const pageHeader = document.querySelector("#pageHeader");
+const mobilePageTitle = document.querySelector("#mobilePageTitle");
 const gospelSelectionByParable = {};
 const showVerseMarkersByParable = {};
 let currentLanguageCode = "pt-BR";
@@ -172,6 +177,16 @@ const UI_STRINGS = {
     showVerses: "mostrar versículos",
     noParableContent: "Conteúdo indisponível para esta parábola no idioma selecionado.",
     noPassageContent: "Sem conteúdo disponível.",
+    shareParable: "Compartilhar parábola",
+    shareParableUnavailable: "Abra uma parábola para compartilhar",
+    shareSystem: "Compartilhar...",
+    shareWhatsApp: "WhatsApp",
+    shareFacebook: "Facebook",
+    shareInstagram: "Instagram",
+    shareX: "X",
+    shareCopyLink: "Copiar link",
+    shareCopied: "Link copiado para a área de transferência.",
+    shareInstagramHint: "Link copiado. Cole no Instagram para compartilhar.",
     relatedContentTitle: "Conteúdos adicionais relacionados",
     relatedContentOpen: "Abrir conteúdo",
     relatedContentLanguageLabel: "Idioma",
@@ -200,6 +215,16 @@ const UI_STRINGS = {
     showVerses: "mostrar versículos",
     noParableContent: "Conteúdo indisponível para esta parábola no idioma selecionado.",
     noPassageContent: "Sem conteúdo disponível.",
+    shareParable: "Partilhar parábola",
+    shareParableUnavailable: "Abra uma parábola para partilhar",
+    shareSystem: "Partilhar...",
+    shareWhatsApp: "WhatsApp",
+    shareFacebook: "Facebook",
+    shareInstagram: "Instagram",
+    shareX: "X",
+    shareCopyLink: "Copiar ligação",
+    shareCopied: "Ligação copiada para a área de transferência.",
+    shareInstagramHint: "Ligação copiada. Cole no Instagram para partilhar.",
     relatedContentTitle: "Conteúdos adicionais relacionados",
     relatedContentOpen: "Abrir conteúdo",
     relatedContentLanguageLabel: "Idioma",
@@ -228,6 +253,16 @@ const UI_STRINGS = {
     showVerses: "show verses",
     noParableContent: "Content unavailable for this parable in the selected language.",
     noPassageContent: "No content available.",
+    shareParable: "Share parable",
+    shareParableUnavailable: "Open a parable to share",
+    shareSystem: "Share...",
+    shareWhatsApp: "WhatsApp",
+    shareFacebook: "Facebook",
+    shareInstagram: "Instagram",
+    shareX: "X",
+    shareCopyLink: "Copy link",
+    shareCopied: "Link copied to clipboard.",
+    shareInstagramHint: "Link copied. Paste it on Instagram to share.",
     relatedContentTitle: "Related additional content",
     relatedContentOpen: "Open content",
     relatedContentLanguageLabel: "Language",
@@ -256,6 +291,16 @@ const UI_STRINGS = {
     showVerses: "mostrar versículos",
     noParableContent: "Contenido no disponible para esta parábola en el idioma seleccionado.",
     noPassageContent: "Sin contenido disponible.",
+    shareParable: "Compartir parábola",
+    shareParableUnavailable: "Abre una parábola para compartir",
+    shareSystem: "Compartir...",
+    shareWhatsApp: "WhatsApp",
+    shareFacebook: "Facebook",
+    shareInstagram: "Instagram",
+    shareX: "X",
+    shareCopyLink: "Copiar enlace",
+    shareCopied: "Enlace copiado al portapapeles.",
+    shareInstagramHint: "Enlace copiado. Pégalo en Instagram para compartir.",
     relatedContentTitle: "Contenidos adicionales relacionados",
     relatedContentOpen: "Abrir contenido",
     relatedContentLanguageLabel: "Idioma",
@@ -493,6 +538,127 @@ function t(key) {
   return strings[key] || key;
 }
 
+function buildParableShareUrl(parableId) {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("parable");
+  if (isValidParableId(parableId)) {
+    url.searchParams.set("parable", String(parableId));
+  }
+  return url.toString();
+}
+
+function updateShareParableButtonState() {
+  if (!shareParableTrigger) return;
+  const hasParableOpen = currentView === "parable" && isValidParableId(currentParableId);
+  shareParableTrigger.hidden = !hasParableOpen;
+  shareParableTrigger.disabled = !hasParableOpen;
+  if (!hasParableOpen) closeShareMenu();
+  shareParableTrigger.setAttribute("aria-label", hasParableOpen ? t("shareParable") : t("shareParableUnavailable"));
+  shareParableTrigger.title = hasParableOpen ? t("shareParable") : t("shareParableUnavailable");
+  shareParableTrigger.setAttribute("aria-expanded", sharePicker?.classList.contains("is-open") ? "true" : "false");
+}
+
+function closeShareMenu() {
+  if (!sharePicker || !shareParableTrigger) return;
+  sharePicker.classList.remove("is-open");
+  shareParableTrigger.setAttribute("aria-expanded", "false");
+}
+
+function openShareMenu() {
+  if (!sharePicker || !shareParableTrigger || shareParableTrigger.hidden || shareParableTrigger.disabled) return;
+  sharePicker.classList.add("is-open");
+  shareParableTrigger.setAttribute("aria-expanded", "true");
+}
+
+function updateShareMenuTranslations() {
+  if (!shareParableMenu) return;
+  shareParableMenu.setAttribute("aria-label", t("shareParable"));
+  const actions = {
+    system: t("shareSystem"),
+    whatsapp: t("shareWhatsApp"),
+    facebook: t("shareFacebook"),
+    instagram: t("shareInstagram"),
+    x: t("shareX"),
+    copy: t("shareCopyLink")
+  };
+  shareParableMenu.querySelectorAll(".share-option").forEach((button) => {
+    const label = actions[button.dataset.shareAction];
+    if (!label) return;
+    const labelNode = button.querySelector(".share-label");
+    if (labelNode) labelNode.textContent = label;
+    else button.textContent = label;
+  });
+}
+
+async function copyTextToClipboard(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return true;
+  }
+  return false;
+}
+
+async function runShareAction(action) {
+  if (!(currentView === "parable" && isValidParableId(currentParableId))) return;
+  const shareUrl = buildParableShareUrl(currentParableId);
+  const shareTitle = getParableDisplayTitle(currentParableId);
+  const shareText = `${shareTitle}\n${shareUrl}`;
+
+  if (action === "system") {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shareTitle, text: shareTitle, url: shareUrl });
+        return;
+      } catch (_error) {
+        // Continue with prompt fallback below.
+      }
+    }
+    window.prompt(t("shareParable"), shareUrl);
+    return;
+  }
+
+  if (action === "copy") {
+    try {
+      const copied = await copyTextToClipboard(shareUrl);
+      if (copied) {
+        window.alert(t("shareCopied"));
+        return;
+      }
+    } catch (_error) {
+      // Final fallback below.
+    }
+    window.prompt(t("shareParable"), shareUrl);
+    return;
+  }
+
+  if (action === "whatsapp") {
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (action === "facebook") {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (action === "instagram") {
+    try {
+      await copyTextToClipboard(shareUrl);
+    } catch (_error) {
+      // Continue opening Instagram even if copy fails.
+    }
+    window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+    window.alert(t("shareInstagramHint"));
+    return;
+  }
+
+  if (action === "x") {
+    const text = encodeURIComponent(shareTitle);
+    const url = encodeURIComponent(shareUrl);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank", "noopener,noreferrer");
+  }
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -707,6 +873,7 @@ function applyStaticTranslations() {
   document.documentElement.lang = currentLanguageCode;
   document.title = strings.appTitle;
   if (pageTitle) pageTitle.textContent = strings.appTitle;
+  if (mobilePageTitle) mobilePageTitle.textContent = strings.appTitle;
   if (globalControls) globalControls.setAttribute("aria-label", strings.globalControlsAria);
   if (globalLanguageMenu) globalLanguageMenu.setAttribute("aria-label", strings.languageMenuAria);
   if (indexNav) indexNav.setAttribute("aria-label", strings.indexAria);
@@ -719,6 +886,8 @@ function applyStaticTranslations() {
   if (mobileLanguageDialogTitle) mobileLanguageDialogTitle.textContent = strings.languageDialogTitle;
   if (mobileLanguageClose) mobileLanguageClose.setAttribute("aria-label", strings.close);
   if (mobileLanguageMenu) mobileLanguageMenu.setAttribute("aria-label", strings.languageMenuAria);
+  updateShareParableButtonState();
+  updateShareMenuTranslations();
 }
 
 function getLanguageSelfLabel(code) {
@@ -832,31 +1001,39 @@ function renderIndex() {
   });
 }
 
-function renderCurrentParable() {
-  const fallbackId = PARABLES_BY_GOSPEL_LOCATION[0]?.id || PARABLES[0]?.id || null;
-  const resolvedId = currentParableId ?? fallbackId;
-  const parable = PARABLES.find((item) => item.id === resolvedId) || PARABLES[0];
-  if (!parable) return;
-  if (currentParableId == null) currentParableId = parable.id;
-  const apiParable = getApiParable(parable.id);
-  const titleMarkup = `<span class="title-text">${getParableDisplayTitle(parable.id)}</span>`;
-  const currentIndex = PARABLES_BY_GOSPEL_LOCATION.findIndex((item) => item.id === parable.id);
-  const isFirst = currentIndex <= 0;
-  const isLast = currentIndex >= PARABLES_BY_GOSPEL_LOCATION.length - 1;
+function renderParableArticle(parableId, options = {}) {
+  const { showFooterNav = false } = options;
+  const apiParable = getApiParable(parableId);
+  const titleMarkup = `<span class="title-text">${getParableDisplayTitle(parableId)}</span>`;
+  let footerMarkup = "";
 
-  parablesContainer.innerHTML = `
-    <article class="parable" id="parabola-${parable.id}">
-      <h2>${titleMarkup}</h2>
-      ${apiParable ? `<div class="gospel-controls"><div id="parable-${parable.id}-gospel-nav" class="gospel-nav"></div><div id="parable-${parable.id}-verse-toggle" class="verse-toggle"></div></div><div id="parable-${parable.id}-passage" class="passage-content"></div>` : `<p>${t("noParableContent")}</p>`}
-      ${renderRelatedContentSection(parable.id)}
+  if (showFooterNav) {
+    const currentIndex = PARABLES_BY_GOSPEL_LOCATION.findIndex((item) => item.id === parableId);
+    const isFirst = currentIndex <= 0;
+    const isLast = currentIndex >= PARABLES_BY_GOSPEL_LOCATION.length - 1;
+    footerMarkup = `
       <div class="parable-footer-nav">
         <button type="button" class="nav-btn" id="prevParableBtn" ${isFirst ? "disabled" : ""}>${t("prev")}</button>
         <button type="button" class="nav-btn nav-btn-index" id="backToIndexBtn">${t("home")}</button>
         <button type="button" class="nav-btn" id="nextParableBtn" ${isLast ? "disabled" : ""}>${t("next")}</button>
       </div>
+    `;
+  }
+
+  return `
+    <article class="parable" id="parabola-${parableId}">
+      <h2>${titleMarkup}</h2>
+      ${apiParable ? `<div class="gospel-controls"><div id="parable-${parableId}-gospel-nav" class="gospel-nav"></div><div id="parable-${parableId}-verse-toggle" class="verse-toggle"></div></div><div id="parable-${parableId}-passage" class="passage-content"></div>` : `<p>${t("noParableContent")}</p>`}
+      ${renderRelatedContentSection(parableId)}
+      ${footerMarkup}
     </article>
   `;
+}
 
+function bindSingleParableFooter(parableId) {
+  const currentIndex = PARABLES_BY_GOSPEL_LOCATION.findIndex((item) => item.id === parableId);
+  const isFirst = currentIndex <= 0;
+  const isLast = currentIndex >= PARABLES_BY_GOSPEL_LOCATION.length - 1;
   const prevBtn = document.querySelector("#prevParableBtn");
   const nextBtn = document.querySelector("#nextParableBtn");
   const backBtn = document.querySelector("#backToIndexBtn");
@@ -883,13 +1060,26 @@ function renderCurrentParable() {
       window.scrollTo({ top: 0, behavior: "auto" });
     });
   }
+}
 
-  if (apiParable) {
-    renderParablePassage(parable.id);
-  }
+function renderCurrentParable() {
+  const fallbackId = PARABLES_BY_GOSPEL_LOCATION[0]?.id || PARABLES[0]?.id || null;
+  const resolvedId = currentParableId ?? fallbackId;
+  const parable = PARABLES.find((item) => item.id === resolvedId) || PARABLES[0];
+  if (!parable) return;
+  if (currentParableId == null) currentParableId = parable.id;
+
+  parablesContainer.innerHTML = renderParableArticle(parable.id, { showFooterNav: true });
+  bindSingleParableFooter(parable.id);
+  if (getApiParable(parable.id)) renderParablePassage(parable.id);
 }
 
 function renderApp() {
+  applyStaticTranslations();
+  if (pageHeader) {
+    pageHeader.classList.toggle("is-visible-mobile", currentView === "index");
+  }
+
   renderIndex();
   if (currentView === "index") {
     if (pageRoot) pageRoot.classList.add("is-index-view");
@@ -899,6 +1089,7 @@ function renderApp() {
     writeStateToUrl();
     return;
   }
+
   if (pageRoot) pageRoot.classList.remove("is-index-view");
   if (indexSection) indexSection.classList.add("is-hidden");
   if (searchBarSection) searchBarSection.classList.add("is-hidden");
@@ -1000,7 +1191,7 @@ function renderParablePassage(parableId) {
     button.addEventListener("click", () => {
       gospelSelectionByParable[parableId] = button.dataset.gospel;
       renderParablePassage(parableId);
-      renderIndex();
+      if (currentView === "index") renderIndex();
     });
   });
 
@@ -1150,7 +1341,20 @@ function initGlobalVersionUI() {
       langPicker.classList.remove("is-open");
       globalLanguageTrigger.setAttribute("aria-expanded", "false");
     }
+    if (sharePicker && !sharePicker.contains(event.target)) {
+      closeShareMenu();
+    }
   });
+  if (pageTitle) {
+    pageTitle.addEventListener("click", () => {
+      currentView = "index";
+      currentParableId = null;
+      searchQuery = "";
+      if (parableSearchInput) parableSearchInput.value = "";
+      renderApp();
+      window.scrollTo({ top: 0, behavior: "auto" });
+    });
+  }
   if (mobileLanguageTrigger) {
     mobileLanguageTrigger.addEventListener("click", () => {
       const isOpen = mobileLanguageDialog?.classList.contains("is-open");
@@ -1164,8 +1368,31 @@ function initGlobalVersionUI() {
   if (mobileLanguageBackdrop) {
     mobileLanguageBackdrop.addEventListener("click", closeMobileLanguageDialog);
   }
+  if (shareParableTrigger) {
+    shareParableTrigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isOpen = sharePicker?.classList.contains("is-open");
+      if (isOpen) closeShareMenu();
+      else openShareMenu();
+    });
+  }
+  if (shareParableMenu) {
+    shareParableMenu.querySelectorAll(".share-option").forEach((button) => {
+      button.addEventListener("click", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const action = button.dataset.shareAction;
+        if (!action) return;
+        closeShareMenu();
+        await runShareAction(action);
+      });
+    });
+  }
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeMobileLanguageDialog();
+    if (event.key === "Escape") {
+      closeMobileLanguageDialog();
+      closeShareMenu();
+    }
   });
 
   const initialState = readStateFromUrl();
